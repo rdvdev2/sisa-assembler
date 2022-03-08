@@ -1,7 +1,7 @@
-use std::fmt::{Display, Formatter};
-use colorful::{Color, Colorful};
 use crate::{Flags, Lexer, MachineCodeGenerator, Parser, SymbolTableBuilder};
-use crate::span::Span;
+use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
+
+pub mod message;
 
 pub struct Assembler {
     flags: Flags
@@ -10,21 +10,6 @@ pub struct Assembler {
 pub struct AssemblerResult {
     pub machine_code: Option<Vec<u8>>,
     pub assembler_messages: Vec<AssemblerMessage>,
-}
-
-#[derive(Clone)]
-pub struct AssemblerMessage {
-    pub msg_type: AssemblerMessageType,
-    pub description: String,
-    pub span: Option<Span>,
-}
-
-#[allow(dead_code)]
-#[derive(PartialEq, Clone)]
-pub enum AssemblerMessageType {
-    ERROR,
-    WARNING,
-    HELP,
 }
 
 impl Assembler {
@@ -66,25 +51,5 @@ impl Assembler {
         }
 
         result
-    }
-}
-
-impl Display for AssemblerMessageType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            AssemblerMessageType::ERROR => write!(f, "{}", "error".red()),
-            AssemblerMessageType::WARNING => write!(f, "{}", "warning".yellow()),
-            AssemblerMessageType::HELP => write!(f, "{}", "help".blue()),
-        }
-    }
-}
-
-impl AssemblerMessageType {
-    pub(crate) fn get_color(&self) -> Color {
-        match self {
-            AssemblerMessageType::ERROR => Color::Red,
-            AssemblerMessageType::WARNING => Color::Yellow,
-            AssemblerMessageType::HELP => Color::Blue,
-        }
     }
 }

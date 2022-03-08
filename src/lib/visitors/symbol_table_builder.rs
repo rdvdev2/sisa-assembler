@@ -1,4 +1,4 @@
-use crate::assembler::{AssemblerMessage, AssemblerMessageType};
+use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 use crate::{DataSectionStart, Flags};
 use crate::nodes::*;
 use crate::symbol_table::SymbolTable;

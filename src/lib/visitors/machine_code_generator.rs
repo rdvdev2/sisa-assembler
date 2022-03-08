@@ -1,5 +1,4 @@
-use crate::assembler::{AssemblerMessage, AssemblerMessageType};
-use crate::Flags;
+use crate::{AssemblerMessage, AssemblerMessageType, Flags};
 use crate::nodes::*;
 use crate::span::Span;
 use crate::symbol_table::SymbolTable;

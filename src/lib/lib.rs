@@ -25,7 +25,8 @@ use std::io::{Read, Write};
 use std::{fs, path};
 
 pub use flags::*;
-use crate::assembler::{Assembler, AssemblerMessage, AssemblerMessageType};
+use crate::assembler::Assembler;
+use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 use crate::span::Span;
 
 pub fn assemble(source_file: &path::Path, output_file: &path::Path, flags: Flags) -> Result<String, String> {
@@ -65,45 +66,8 @@ fn write_messages(messages: Vec<AssemblerMessage>, source_path: &path::Path, cod
     let mut ret = String::new();
 
     for msg in messages {
-        ret += format!("{}\n", write_message(msg, source_path, code)).as_str();
+        ret += format!("{}\n", msg.write(source_path, code)).as_str();
     }
 
     ret
-}
-
-fn write_message(message: AssemblerMessage, source_path: &path::Path, code: &str) -> String {
-    let title = format!("{}{} {}", message.msg_type.to_string().bold(), ":".bold(), message.description.bold());
-    let file = format!("  {} {}", "-->".blue().bold(), source_path.display());
-    let span = if let Some(span) = message.span {
-        span.to_string()
-    } else {
-        String::from("1:1")
-    };
-    let context = if let Some(span) = message.span {
-        write_context(code, span, message.msg_type)
-    } else {
-        String::new()
-    };
-
-    format!("{}\n{}:{}\n{}", title, file, span, context)
-}
-
-fn write_context(code: &str, span: Span, msg_type: AssemblerMessageType) -> String {
-    let mut iter = code.chars().peekable();
-    let mut line = 1;
-    let mut context = String::new();
-
-    while let Some(c) = iter.next() {
-        if c == '\n' {
-            line += 1;
-        } else if span.lo.line <= line && line <= span.hi.line {
-            context.push(c);
-        }
-    }
-
-    format!("{}\n{}{}",
-        context,
-        " ".repeat(span.lo.col-1),
-        "^".repeat(span.lo.col.abs_diff(span.hi.col)).color(msg_type.get_color())
-    )
 }
