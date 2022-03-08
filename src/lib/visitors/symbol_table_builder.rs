@@ -1,8 +1,8 @@
 use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
-use crate::{DataSectionStart, Flags};
 use crate::nodes::*;
 use crate::symbol_table::SymbolTable;
 use crate::visitors::Visitor;
+use crate::{DataSectionStart, Flags};
 
 pub struct SymbolTableBuilder<'a> {
     current_pos: u16,
@@ -17,7 +17,7 @@ impl<'a> SymbolTableBuilder<'a> {
             current_pos: 0,
             symbol_table: SymbolTable::new(),
             messages: Vec::new(),
-            flags
+            flags,
         }
     }
 
@@ -41,11 +41,11 @@ impl<'a> SymbolTableBuilder<'a> {
             })
         }
     }
-    
-    pub fn get_messages(&self) -> Vec<AssemblerMessage> { 
+
+    pub fn get_messages(&self) -> Vec<AssemblerMessage> {
         self.messages.clone()
     }
-    
+
     pub fn get_symbol_table(self) -> SymbolTable {
         self.symbol_table
     }
@@ -58,7 +58,8 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
         if let Some(ts) = &node.text_section {
             ts.accept(self)?;
         }
-        self.symbol_table.set_text_section(text_start, self.current_pos - text_start);
+        self.symbol_table
+            .set_text_section(text_start, self.current_pos - text_start);
 
         if let DataSectionStart::Absolute(pos) = self.flags.data_section_start {
             self.current_pos = pos;
@@ -67,7 +68,8 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
         if let Some(ds) = &node.data_section {
             ds.accept(self)?;
         }
-        self.symbol_table.set_data_section(data_start, self.current_pos - data_start);
+        self.symbol_table
+            .set_data_section(data_start, self.current_pos - data_start);
 
         for constant in &node.constants {
             constant.accept(self)?;
@@ -129,14 +131,16 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
                 span: None,
             });
         }
-        
+
         Ok(())
     }
 
     fn visit_constant(&mut self, node: &ConstantNode) -> Result<(), ()> {
         if let Err(e) = match node.value {
             LiteralNode::Constant(c) => self.put_constant(node.name.clone(), c),
-            _ => Err(String::from(".set directive only accepts constant values! (Not functions nor labels)")),
+            _ => Err(String::from(
+                ".set directive only accepts constant values! (Not functions nor labels)",
+            )),
         } {
             self.messages.push(AssemblerMessage {
                 msg_type: AssemblerMessageType::ERROR,
@@ -144,7 +148,7 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
                 span: None,
             })
         }
-        
+
         Ok(())
     }
 }

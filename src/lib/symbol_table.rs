@@ -21,13 +21,23 @@ impl SymbolTable {
     pub fn new() -> Self {
         Self {
             symbols: HashMap::new(),
-            data_section: Section { base_address: 0, length: 0 },
-            text_section: Section { base_address: 0, length: 0 },
+            data_section: Section {
+                base_address: 0,
+                length: 0,
+            },
+            text_section: Section {
+                base_address: 0,
+                length: 0,
+            },
         }
     }
 
     pub fn put_constant(&mut self, name: String, value: u16) -> Result<(), String> {
-        if self.symbols.insert(name.clone(), SymbolTableEntry::new_constant(value)).is_some() {
+        if self
+            .symbols
+            .insert(name.clone(), SymbolTableEntry::new_constant(value))
+            .is_some()
+        {
             Err(format!("Symbol {} is already defined", name))
         } else {
             Ok(())
@@ -35,7 +45,11 @@ impl SymbolTable {
     }
 
     pub fn put_address(&mut self, name: String, value: u16) -> Result<(), String> {
-        if self.symbols.insert(name.clone(), SymbolTableEntry::new_address(value)).is_some() {
+        if self
+            .symbols
+            .insert(name.clone(), SymbolTableEntry::new_address(value))
+            .is_some()
+        {
             Err(format!("Symbol {} is already defined", name))
         } else {
             Ok(())
@@ -43,7 +57,8 @@ impl SymbolTable {
     }
 
     pub fn get_symbol(&self, symbol: &str) -> Result<&SymbolTableEntry, String> {
-        self.symbols.get(symbol)
+        self.symbols
+            .get(symbol)
             .map(|e| e)
             .ok_or(format!("Symbol {} isn't defined", symbol))
     }
@@ -63,8 +78,8 @@ impl SymbolTable {
     }
 
     pub fn is_valid_layout(&self) -> bool {
-        self.text_section.get_end_address() <= self.data_section.base_address ||
-            self.data_section.get_end_address() <= self.text_section.base_address
+        self.text_section.get_end_address() <= self.data_section.base_address
+            || self.data_section.get_end_address() <= self.text_section.base_address
     }
 
     pub fn get_text_section_base_address(&self) -> u16 {
@@ -76,7 +91,10 @@ impl SymbolTable {
     }
 
     pub fn get_program_end_address(&self) -> u16 {
-        max(self.data_section.get_end_address(), self.text_section.get_end_address())
+        max(
+            self.data_section.get_end_address(),
+            self.text_section.get_end_address(),
+        )
     }
 }
 

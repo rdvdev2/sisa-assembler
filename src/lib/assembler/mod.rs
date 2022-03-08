@@ -1,10 +1,10 @@
-use crate::{Flags, Lexer, MachineCodeGenerator, Parser, SymbolTableBuilder};
 use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
+use crate::{Flags, Lexer, MachineCodeGenerator, Parser, SymbolTableBuilder};
 
 pub mod message;
 
 pub struct Assembler<'a> {
-    flags: &'a Flags
+    flags: &'a Flags,
 }
 
 pub struct AssemblerResult {
@@ -14,9 +14,7 @@ pub struct AssemblerResult {
 
 impl<'a> Assembler<'a> {
     pub fn new(flags: &'a Flags) -> Self {
-        Self {
-            flags
-        }
+        Self { flags }
     }
 
     pub fn assemble(&self, code: &str) -> AssemblerResult {
@@ -37,14 +35,20 @@ impl<'a> Assembler<'a> {
 
         let mut symbol_table_builder = SymbolTableBuilder::new(&self.flags);
         symbol_table_builder.build(&node);
-        result.assembler_messages.extend(symbol_table_builder.get_messages());
+        result
+            .assembler_messages
+            .extend(symbol_table_builder.get_messages());
         let symbol_table = symbol_table_builder.get_symbol_table();
 
         let mut machine_code_generator = MachineCodeGenerator::new(&symbol_table, &self.flags);
         result.machine_code = machine_code_generator.generate(&node);
-        result.assembler_messages.extend(machine_code_generator.get_messages());
+        result
+            .assembler_messages
+            .extend(machine_code_generator.get_messages());
 
-        if result.assembler_messages.iter()
+        if result
+            .assembler_messages
+            .iter()
             .any(|msg| msg.msg_type == AssemblerMessageType::ERROR)
         {
             result.machine_code = None;

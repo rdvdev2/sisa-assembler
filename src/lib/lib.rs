@@ -8,6 +8,7 @@
 extern crate core;
 
 mod assembler;
+mod flags;
 mod lexer;
 mod nodes;
 mod parser;
@@ -15,7 +16,6 @@ mod span;
 mod symbol_table;
 mod tokens;
 mod visitors;
-mod flags;
 
 use crate::lexer::Lexer;
 use crate::parser::Parser;
@@ -23,12 +23,16 @@ use crate::visitors::{MachineCodeGenerator, SymbolTableBuilder};
 use std::io::{Read, Write};
 use std::{fs, path};
 
-pub use flags::*;
-use crate::assembler::Assembler;
 use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
+use crate::assembler::Assembler;
 use crate::span::Span;
+pub use flags::*;
 
-pub fn assemble(source_file: &path::Path, output_file: &path::Path, flags: &Flags) -> Result<String, String> {
+pub fn assemble(
+    source_file: &path::Path,
+    output_file: &path::Path,
+    flags: &Flags,
+) -> Result<String, String> {
     let code = read_source(source_file)?;
 
     let assembler = Assembler::new(flags);
@@ -36,12 +40,19 @@ pub fn assemble(source_file: &path::Path, output_file: &path::Path, flags: &Flag
 
     if let Some(machine_code) = asm_result.machine_code {
         write_output(output_file, machine_code.as_slice())?;
-        Ok(write_messages(asm_result.assembler_messages, source_file, &code))
+        Ok(write_messages(
+            asm_result.assembler_messages,
+            source_file,
+            &code,
+        ))
     } else {
-        Err(write_messages(asm_result.assembler_messages, source_file, &code))
+        Err(write_messages(
+            asm_result.assembler_messages,
+            source_file,
+            &code,
+        ))
     }
 }
-
 
 fn read_source(path: &path::Path) -> Result<String, String> {
     let mut file = fs::File::open(path).map_err(|e| format!("Error opening source file: {}", e))?;

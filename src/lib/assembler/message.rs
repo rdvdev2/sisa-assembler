@@ -1,7 +1,7 @@
+use crate::Span;
+use colorful::{Color, Colorful};
 use std::fmt::{Display, Formatter};
 use std::path;
-use colorful::{Color, Colorful};
-use crate::Span;
 
 #[derive(Clone)]
 pub struct AssemblerMessage {
@@ -40,7 +40,12 @@ impl AssemblerMessageType {
 
 impl AssemblerMessage {
     pub fn write(self, source_path: &path::Path, code: &str) -> String {
-        let title = format!("{}{} {}", self.msg_type.to_string().bold(), ":".bold(), self.description.bold());
+        let title = format!(
+            "{}{} {}",
+            self.msg_type.to_string().bold(),
+            ":".bold(),
+            self.description.bold()
+        );
         let file = format!("  {} {}", "-->".blue().bold(), source_path.display());
         let span = if let Some(span) = self.span {
             span.to_string()
@@ -57,8 +62,6 @@ impl AssemblerMessage {
     }
 }
 
-
-
 fn write_context(code: &str, span: Span, msg_type: AssemblerMessageType) -> String {
     let mut iter = code.chars().peekable();
     let mut line = 1;
@@ -72,9 +75,11 @@ fn write_context(code: &str, span: Span, msg_type: AssemblerMessageType) -> Stri
         }
     }
 
-    format!("{}\n{}{}",
-            context,
-            " ".repeat(span.lo.col-1),
-            "^".repeat(span.lo.col.abs_diff(span.hi.col)).color(msg_type.get_color())
+    format!(
+        "{}\n{}{}",
+        context,
+        " ".repeat(span.lo.col - 1),
+        "^".repeat(span.lo.col.abs_diff(span.hi.col))
+            .color(msg_type.get_color())
     )
 }

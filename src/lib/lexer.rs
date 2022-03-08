@@ -24,7 +24,7 @@ impl<'a> Lexer<'a> {
         r"\.word" => WORD,
         r"\.space" => SPACE,
         r"\.even" => EVEN,
-        
+
         r"\.set" => SET,
 
         r"," => COMMA,
@@ -136,8 +136,8 @@ impl<'a> Iterator for Lexer<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::assert_matches::assert_matches;
     use super::*;
+    use std::assert_matches::assert_matches;
 
     #[test]
     fn lex_instruction() {
@@ -159,13 +159,13 @@ mod tests {
 
         match lexer.next() {
             Some((Token::IDENT(name), _)) => assert_eq!(name, "lab"),
-            _ => panic!()
+            _ => panic!(),
         }
         assert_matches!(lexer.next(), Some((Token::COLON, _)));
         assert_matches!(lexer.next(), Some((Token::LPAR, _)));
         match lexer.next() {
             Some((Token::IDENT(name), _)) => assert_eq!(name, "lab"),
-            _ => panic!()
+            _ => panic!(),
         }
         assert_matches!(lexer.next(), Some((Token::RPAR, _)));
         assert_matches!(lexer.next(), None);
@@ -219,16 +219,16 @@ mod tests {
     fn span() {
         let mut lexer = Lexer::new("    \n MOVI");
 
-        assert_matches!(lexer.next(), Some((_, Span {
-            lo: FileLoc {
-                col: 2,
-                line: 2,
-            },
-            hi: FileLoc {
-                col: 6,
-                line: 2,
-            }
-        })));
+        assert_matches!(
+            lexer.next(),
+            Some((
+                _,
+                Span {
+                    lo: FileLoc { col: 2, line: 2 },
+                    hi: FileLoc { col: 6, line: 2 }
+                }
+            ))
+        );
         assert_matches!(lexer.next(), None);
     }
 }

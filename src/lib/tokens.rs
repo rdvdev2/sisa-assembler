@@ -57,5 +57,7 @@ pub fn parse_int_lit(tok: &str) -> Token {
 }
 
 pub fn parse_hex_lit(tok: &str) -> Token {
-    Token::LIT(u16::from_str_radix(tok.trim_start_matches("0x").trim_start_matches("0X"), 16).unwrap())
+    Token::LIT(
+        u16::from_str_radix(tok.trim_start_matches("0x").trim_start_matches("0X"), 16).unwrap(),
+    )
 }

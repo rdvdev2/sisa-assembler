@@ -135,17 +135,13 @@ impl ProgramNode {
 
 impl DataSectionNode {
     pub fn empty() -> Self {
-        Self {
-            statements: vec![],
-        }
+        Self { statements: vec![] }
     }
 }
 
 impl TextSectionNode {
     pub fn empty() -> Self {
-        Self {
-            statements: vec![],
-        }
+        Self { statements: vec![] }
     }
 }
 
@@ -167,9 +163,6 @@ impl RawDataNode {
 
 impl ConstantNode {
     pub fn new(name: String, value: LiteralNode) -> Self {
-        Self {
-            name,
-            value,
-        }
+        Self { name, value }
     }
 }

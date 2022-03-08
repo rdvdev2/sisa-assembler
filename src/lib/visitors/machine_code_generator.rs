@@ -1,9 +1,9 @@
-use crate::{AssemblerMessage, AssemblerMessageType, Flags};
 use crate::nodes::*;
 use crate::span::Span;
 use crate::symbol_table::SymbolTable;
 use crate::visitors::machine_code_generator::Rets::RawData;
 use crate::visitors::Visitor;
+use crate::{AssemblerMessage, AssemblerMessageType, Flags};
 
 pub struct MachineCodeGenerator<'a> {
     symbol_table: &'a SymbolTable,
@@ -64,22 +64,19 @@ impl<'a> Visitor<Rets, ()> for MachineCodeGenerator<'a> {
         }
 
         Ok(Rets::Raw(
-            statements.iter()
-                .map(|r| {
-                    match r {
-                        Rets::Instruction(i) => {
-                            self.add_warning("Found an instruction on .data", None);
-                            Some(i.to_le_bytes().to_vec())
-                        }
-                        Rets::RawData(d) => {
-                            Some(d.to_vec())
-                        }
-                        _ => None
+            statements
+                .iter()
+                .map(|r| match r {
+                    Rets::Instruction(i) => {
+                        self.add_warning("Found an instruction on .data", None);
+                        Some(i.to_le_bytes().to_vec())
                     }
+                    Rets::RawData(d) => Some(d.to_vec()),
+                    _ => None,
                 })
                 .flatten()
                 .flatten()
-                .collect()
+                .collect(),
         ))
     }
 
@@ -96,22 +93,19 @@ impl<'a> Visitor<Rets, ()> for MachineCodeGenerator<'a> {
         }
 
         Ok(Rets::Raw(
-            statements.iter()
-                .map(|r| {
-                    match r {
-                        Rets::Instruction(i) => {
-                            Some(i.to_le_bytes().to_vec())
-                        }
-                        Rets::RawData(d) => {
-                            self.add_warning("Found raw data in .text!", None);
-                            Some(d.to_vec())
-                        }
-                        _ => None
+            statements
+                .iter()
+                .map(|r| match r {
+                    Rets::Instruction(i) => Some(i.to_le_bytes().to_vec()),
+                    Rets::RawData(d) => {
+                        self.add_warning("Found raw data in .text!", None);
+                        Some(d.to_vec())
                     }
+                    _ => None,
                 })
                 .flatten()
                 .flatten()
-                .collect()
+                .collect(),
         ))
     }
 
@@ -148,9 +142,10 @@ impl<'a> Visitor<Rets, ()> for MachineCodeGenerator<'a> {
 
                 let mut bytes = Vec::new();
                 for node in data {
-                    bytes.push(node.accept(self)
-                        .map_or(Ok(0), |r| r.as_u8())
-                        .inspect_err(|e| self.add_error(e, None))
+                    bytes.push(
+                        node.accept(self)
+                            .map_or(Ok(0), |r| r.as_u8())
+                            .inspect_err(|e| self.add_error(e, None)),
                     );
                 }
 
@@ -255,7 +250,7 @@ impl<'a> MachineCodeGenerator<'a> {
         self.messages.push(AssemblerMessage {
             msg_type: AssemblerMessageType::WARNING,
             description: message.to_string(),
-            span
+            span,
         });
     }
 
@@ -263,7 +258,7 @@ impl<'a> MachineCodeGenerator<'a> {
         self.messages.push(AssemblerMessage {
             msg_type: AssemblerMessageType::ERROR,
             description: message.to_string(),
-            span
+            span,
         })
     }
 
@@ -290,9 +285,13 @@ impl<'a> MachineCodeGenerator<'a> {
                 rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
                 2,
             ),
-            InstructionNode::Not { rd, ra } => {
-                codify_3r(0x0, ra.accept(self).map_or(Ok(0), |r| r.as_u8())?, 0, rd.accept(self).map_or(Ok(0), |r| r.as_u8())?, 3)
-            }
+            InstructionNode::Not { rd, ra } => codify_3r(
+                0x0,
+                ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                0,
+                rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                3,
+            ),
             InstructionNode::Add { rd, ra, rb } => codify_3r(
                 0x0,
                 ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
@@ -386,33 +385,50 @@ impl<'a> MachineCodeGenerator<'a> {
                 rb.accept(self).map_or(Ok(0), |r| r.as_u8())?,
                 n6.accept(self).map_or(Ok(0), |r| r.as_u8())?,
             ),
-            InstructionNode::Jalr { rd, ra } => {
-                codify_2r(0x7, ra.accept(self).map_or(Ok(0), |r| r.as_u8())?, rd.accept(self).map_or(Ok(0), |r| r.as_u8())?, 0)
-            }
+            InstructionNode::Jalr { rd, ra } => codify_2r(
+                0x7,
+                ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                0,
+            ),
             InstructionNode::Bz { ra, n8 } => codify_1r(
                 0x8,
                 ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
                 false,
-                n8.accept(self).map_or(Ok(0), |r| r.as_u8_relative(pc + 2))?,
+                n8.accept(self)
+                    .map_or(Ok(0), |r| r.as_u8_relative(pc + 2))?,
             ),
             InstructionNode::Bnz { ra, n8 } => codify_1r(
                 0x8,
                 ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
                 true,
-                n8.accept(self).map_or(Ok(0), |r| r.as_u8_relative(pc + 2))?,
+                n8.accept(self)
+                    .map_or(Ok(0), |r| r.as_u8_relative(pc + 2))?,
             ),
-            InstructionNode::Movi { rd, n8 } => {
-                codify_1r(0x9, rd.accept(self).map_or(Ok(0), |r| r.as_u8())?, false, n8.accept(self).map_or(Ok(0), |r| r.as_u8())?)
-            }
-            InstructionNode::Movhi { rd, n8 } => {
-                codify_1r(0x9, rd.accept(self).map_or(Ok(0), |r| r.as_u8())?, true, n8.accept(self).map_or(Ok(0), |r| r.as_u8())?)
-            }
-            InstructionNode::In { rd, n8 } => {
-                codify_1r(0xA, rd.accept(self).map_or(Ok(0), |r| r.as_u8())?, false, n8.accept(self).map_or(Ok(0), |r| r.as_u8())?)
-            }
-            InstructionNode::Out { n8, ra } => {
-                codify_1r(0xA, ra.accept(self).map_or(Ok(0), |r| r.as_u8())?, true, n8.accept(self).map_or(Ok(0), |r| r.as_u8())?)
-            }
+            InstructionNode::Movi { rd, n8 } => codify_1r(
+                0x9,
+                rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                false,
+                n8.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+            ),
+            InstructionNode::Movhi { rd, n8 } => codify_1r(
+                0x9,
+                rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                true,
+                n8.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+            ),
+            InstructionNode::In { rd, n8 } => codify_1r(
+                0xA,
+                rd.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                false,
+                n8.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+            ),
+            InstructionNode::Out { n8, ra } => codify_1r(
+                0xA,
+                ra.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+                true,
+                n8.accept(self).map_or(Ok(0), |r| r.as_u8())?,
+            ),
         })
     }
 }
@@ -449,7 +465,10 @@ impl Rets {
     fn get_raw_contents(self) -> Vec<u8> {
         match self {
             Rets::Raw(i) => i,
-            x => panic!("Called Rets::get_raw_contents() on an invalid value: {:?}", x),
+            x => panic!(
+                "Called Rets::get_raw_contents() on an invalid value: {:?}",
+                x
+            ),
         }
     }
 }

@@ -1,7 +1,7 @@
 #![feature(is_some_with)]
 
-use std::{fs, process};
 use std::path::PathBuf;
+use std::{fs, process};
 
 #[test]
 fn assemble_files() {
@@ -11,20 +11,28 @@ fn assemble_files() {
 
     fs::create_dir_all(&tmp_dir).unwrap();
 
-    let sources: Vec<PathBuf> = fs::read_dir(tests_folder).unwrap()
+    let sources: Vec<PathBuf> = fs::read_dir(tests_folder)
+        .unwrap()
         .flatten()
         .filter(|f| f.file_name().to_string_lossy().ends_with(".S"))
         .map(|f| f.path())
         .collect();
 
     for source in sources {
-        let output = tmp_dir.join(source.file_name().unwrap()).with_extension("out");
+        let output = tmp_dir
+            .join(source.file_name().unwrap())
+            .with_extension("out");
         let result = process::Command::new(&executable)
             .args([
-                  "-i", &source.to_string_lossy(),
-                  "-o", &output.to_string_lossy(),
-                  "--data-section-start", "0x8000"])
-            .output().unwrap();
+                "-i",
+                &source.to_string_lossy(),
+                "-o",
+                &output.to_string_lossy(),
+                "--data-section-start",
+                "0x8000",
+            ])
+            .output()
+            .unwrap();
 
         assert!(result.status.success());
         assert!(output.exists());

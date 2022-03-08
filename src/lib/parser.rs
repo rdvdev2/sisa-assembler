@@ -1,8 +1,8 @@
+use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 use crate::nodes::*;
 use crate::span::Span;
 use crate::tokens::Token::{self, *};
 use plex::parser;
-use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 
 pub struct Parser<T: Iterator<Item = (Token, Span)>> {
     tokens: T,

@@ -43,10 +43,13 @@ Recognized options:
     --auto-align-sections           Automatically aligns sections to multiples of 2 (disabled by default)
 
     -h, --help                      Shows this help message", config.executable);
-        return Ok(())
+        return Ok(());
     }
 
-    eprintln!("{}", assemble(&*config.source_file, &config.output_file, &config.flags)?);
+    eprintln!(
+        "{}",
+        assemble(&*config.source_file, &config.output_file, &config.flags)?
+    );
 
     let duration = time::SystemTime::now().duration_since(start);
     if let Ok(duration) = duration {
@@ -70,22 +73,51 @@ fn parse_arguments() -> Result<Config, String> {
 
     while let Some(arg) = args.next() {
         match arg.as_ref() {
-            "-i" | "--input" => config.source_file = args.next().ok_or("Missing a parameter after --input")?.into(),
-            "-o" | "--output" => config.output_file = args.next().ok_or("Missing a parameter after --output")?.into(),
+            "-i" | "--input" => {
+                config.source_file = args
+                    .next()
+                    .ok_or("Missing a parameter after --input")?
+                    .into()
+            }
+            "-o" | "--output" => {
+                config.output_file = args
+                    .next()
+                    .ok_or("Missing a parameter after --output")?
+                    .into()
+            }
             "-h" | "--help" => config.display_help = true,
 
-            "--text-section-start" => config.flags.text_section_start =
-                u16::from_str_radix(&args.next().ok_or("Missing a parameter after --text-section-start")?[2..], 16)
-                    .map_err(|e| format!("Error parsing address: {}", e))?,
+            "--text-section-start" => {
+                config.flags.text_section_start = u16::from_str_radix(
+                    &args
+                        .next()
+                        .ok_or("Missing a parameter after --text-section-start")?[2..],
+                    16,
+                )
+                .map_err(|e| format!("Error parsing address: {}", e))?
+            }
 
-            "--data-section-start" => config.flags.data_section_start = DataSectionStart::Absolute(
-                u16::from_str_radix(&args.next().ok_or("Missing a parameter after --data-section-start")?[2..], 16)
-                    .map_err(|e| format!("Error parsing address: {}", e))?),
+            "--data-section-start" => {
+                config.flags.data_section_start = DataSectionStart::Absolute(
+                    u16::from_str_radix(
+                        &args
+                            .next()
+                            .ok_or("Missing a parameter after --data-section-start")?[2..],
+                        16,
+                    )
+                    .map_err(|e| format!("Error parsing address: {}", e))?,
+                )
+            }
 
             "--auto-align-words" => config.flags.auto_align_words = true,
             "--auto-align-sections" => config.flags.auto_align_sections = true,
 
-            _ => return Err(format!("Unrecognized parameter, run {} -h for help.", config.executable)),
+            _ => {
+                return Err(format!(
+                    "Unrecognized parameter, run {} -h for help.",
+                    config.executable
+                ))
+            }
         }
     }
 

@@ -9,8 +9,10 @@ pub use symbol_table_builder::SymbolTableBuilder;
 macro_rules! visit_node {
     ($method:ident($ty:ty)) => {
         #[allow(unused_variables)]
-        fn $method(&mut self, node: &$ty) -> Result<T, E> { Ok(Default::default()) }
-    }
+        fn $method(&mut self, node: &$ty) -> Result<T, E> {
+            Ok(Default::default())
+        }
+    };
 }
 
 macro_rules! visit_nodes {
