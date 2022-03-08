@@ -20,7 +20,6 @@ mod flags;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
 use crate::visitors::{MachineCodeGenerator, SymbolTableBuilder};
-use colorful::Colorful;
 use std::io::{Read, Write};
 use std::{fs, path};
 
@@ -29,7 +28,7 @@ use crate::assembler::Assembler;
 use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 use crate::span::Span;
 
-pub fn assemble(source_file: &path::Path, output_file: &path::Path, flags: Flags) -> Result<String, String> {
+pub fn assemble(source_file: &path::Path, output_file: &path::Path, flags: &Flags) -> Result<String, String> {
     let code = read_source(source_file)?;
 
     let assembler = Assembler::new(flags);

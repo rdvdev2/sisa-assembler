@@ -46,7 +46,7 @@ Recognized options:
         return Ok(())
     }
 
-    eprintln!("{}", assemble(&*config.source_file, &config.output_file, config.flags)?);
+    eprintln!("{}", assemble(&*config.source_file, &config.output_file, &config.flags)?);
 
     let duration = time::SystemTime::now().duration_since(start);
     if let Ok(duration) = duration {

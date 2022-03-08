@@ -3,8 +3,8 @@ use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
 
 pub mod message;
 
-pub struct Assembler {
-    flags: Flags
+pub struct Assembler<'a> {
+    flags: &'a Flags
 }
 
 pub struct AssemblerResult {
@@ -12,10 +12,10 @@ pub struct AssemblerResult {
     pub assembler_messages: Vec<AssemblerMessage>,
 }
 
-impl Assembler {
-    pub fn new(flags: Flags) -> Self {
+impl<'a> Assembler<'a> {
+    pub fn new(flags: &'a Flags) -> Self {
         Self {
-            flags: flags
+            flags
         }
     }
 
