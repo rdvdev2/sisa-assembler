@@ -1,8 +1,9 @@
 use crate::assembler::message::{AssemblerMessage, AssemblerMessageType};
+use crate::nodes::_node_traits::NodeVisitor as nvst;
 use crate::nodes::*;
 use crate::symbol_table::SymbolTable;
-use crate::visitors::Visitor;
-use crate::{DataSectionStart, Flags};
+use crate::{DataSectionStart, Flags, Span};
+use easy_nodes::Node;
 
 pub struct SymbolTableBuilder<'a> {
     current_pos: u16,
@@ -30,7 +31,7 @@ impl<'a> SymbolTableBuilder<'a> {
     }
 
     #[allow(unused_must_use)] // The result will be used when getting messages
-    pub fn build(&mut self, node: &ProgramNode) {
+    pub fn build(&mut self, node: &Node<Span, Program>) {
         node.accept(self);
 
         if !self.symbol_table.is_valid_layout() {
@@ -51,12 +52,12 @@ impl<'a> SymbolTableBuilder<'a> {
     }
 }
 
-impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
-    fn visit_program(&mut self, node: &ProgramNode) -> Result<(), ()> {
+impl<'a> NodeVisitor<()> for SymbolTableBuilder<'a> {
+    fn visit_program(&mut self, _span: &Span, program: &Program) {
         self.current_pos = self.flags.text_section_start;
         let text_start = self.current_pos;
-        if let Some(ts) = &node.text_section {
-            ts.accept(self)?;
+        if let Some(ts) = &program.text_section {
+            ts.accept(self);
         }
         self.symbol_table
             .set_text_section(text_start, self.current_pos - text_start);
@@ -65,79 +66,71 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
             self.current_pos = pos;
         }
         let data_start = self.current_pos;
-        if let Some(ds) = &node.data_section {
-            ds.accept(self)?;
+        if let Some(ds) = &program.data_section {
+            ds.accept(self);
         }
         self.symbol_table
             .set_data_section(data_start, self.current_pos - data_start);
 
-        for constant in &node.constants {
-            constant.accept(self)?;
+        for constant in &program.constants {
+            constant.accept(self);
         }
-
-        Ok(())
     }
 
-    fn visit_data_section(&mut self, node: &DataSectionNode) -> Result<(), ()> {
+    fn visit_data_section(&mut self, _span: &Span, ds: &DataSection) {
         if self.flags.auto_align_sections && self.current_pos % 2 != 0 {
             self.current_pos += 1;
         }
-        for statement in &node.statements {
-            statement.accept(self)?;
+        for statement in &ds.statements {
+            statement.accept(self);
         }
-        Ok(())
     }
 
-    fn visit_text_section(&mut self, node: &TextSectionNode) -> Result<(), ()> {
+    fn visit_text_section(&mut self, _span: &Span, ts: &TextSection) {
         if self.flags.auto_align_sections && self.current_pos % 2 != 0 {
             self.current_pos += 1;
         }
-        for statement in &node.statements {
-            statement.accept(self)?;
-        }
-        Ok(())
-    }
-
-    fn visit_statement(&mut self, node: &StatementNode) -> Result<(), ()> {
-        match node {
-            StatementNode::Instruction(i) => i.accept(self),
-            StatementNode::Label(l) => l.accept(self),
-            StatementNode::RawData(r) => r.accept(self),
-            StatementNode::Constant(c) => c.accept(self),
+        for statement in &ts.statements {
+            statement.accept(self);
         }
     }
 
-    fn visit_raw_data(&mut self, node: &RawDataNode) -> Result<(), ()> {
-        if let RawDataNode::Words(_) = node {
+    fn visit_statement(&mut self, _span: &Span, statement: &Statement) {
+        match statement {
+            Statement::Instruction(i) => i.accept(self),
+            Statement::Label(l) => l.accept(self),
+            Statement::RawData(r) => r.accept(self),
+            Statement::Constant(c) => c.accept(self),
+        }
+    }
+
+    fn visit_instruction(&mut self, _span: &Span, _node: &Instruction) {
+        self.current_pos += 2;
+    }
+
+    fn visit_raw_data(&mut self, _span: &Span, raw_data: &RawData) {
+        if let RawData::Words(_) = raw_data {
             if self.flags.auto_align_words && self.current_pos % 2 != 0 {
                 self.current_pos += 1;
             }
         }
 
-        self.current_pos += node.get_size(self.current_pos);
-        Ok(())
+        self.current_pos += raw_data.get_size(self.current_pos);
     }
 
-    fn visit_instruction(&mut self, _node: &InstructionNode) -> Result<(), ()> {
-        self.current_pos += 2;
-        Ok(())
-    }
-
-    fn visit_label(&mut self, node: &LabelNode) -> Result<(), ()> {
-        if let Err(e) = self.put_current_address(node.label.clone()) {
+    fn visit_label(&mut self, span: &Span, label: &Label) {
+        if let Err(e) = self.put_current_address(label.label.clone()) {
             self.messages.push(AssemblerMessage {
                 msg_type: AssemblerMessageType::ERROR,
                 description: e,
-                span: None,
+                span: Some(*span),
             });
         }
-
-        Ok(())
     }
 
-    fn visit_constant(&mut self, node: &ConstantNode) -> Result<(), ()> {
-        if let Err(e) = match node.value {
-            LiteralNode::Constant(c) => self.put_constant(node.name.clone(), c),
+    fn visit_constant(&mut self, span: &Span, constant: &Constant) {
+        if let Err(e) = match constant.value.get_data() {
+            Literal::Constant(c) => self.put_constant(constant.name.clone(), *c),
             _ => Err(String::from(
                 ".set directive only accepts constant values! (Not functions nor labels)",
             )),
@@ -145,10 +138,8 @@ impl<'a> Visitor<(), ()> for SymbolTableBuilder<'a> {
             self.messages.push(AssemblerMessage {
                 msg_type: AssemblerMessageType::ERROR,
                 description: e,
-                span: None,
+                span: Some(*span),
             })
         }
-
-        Ok(())
     }
 }

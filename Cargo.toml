@@ -15,3 +15,6 @@ path = "src/main.rs"
 [dependencies]
 plex = "0.2"
 colorful = "0.2"
+easy_nodes = { path = "easy_nodes" }
+
+[workspace]

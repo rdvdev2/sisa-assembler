@@ -1,129 +1,119 @@
-use crate::visitors::Visitor;
-use std::fmt::Debug;
+use crate::Span;
+use easy_nodes::{node_system, Node};
 
-pub trait Node: Debug + Clone {
-    fn accept<T: Default, E, V: Visitor<T, E>>(&self, v: &mut V) -> Result<T, E>;
-}
-
-macro_rules! node {
-    (#[consumer = $method:ident()] $vis:vis $decl:ident $ident:ident $($tt:tt)?) => {
-        #[derive(Debug, Clone)]
-        $vis $decl $ident $($tt)?
-
-        impl Node for $ident {
-            fn accept<T: Default, E, V: Visitor<T, E>>(&self, v: &mut V) -> Result<T, E> {
-                v.$method(self)
-            }
-        }
+node_system! {
+    pub trait NodeVisitor<Span> {
+        fn visit_program<Program>();
+        fn visit_data_section<DataSection>();
+        fn visit_text_section<TextSection>();
+        fn visit_statement<Statement>();
+        fn visit_instruction<Instruction>();
+        fn visit_raw_data<RawData>();
+        fn visit_registry<Registry>();
+        fn visit_literal<Literal>();
+        fn visit_label<Label>();
+        fn visit_symbol_ref<SymbolRef>();
+        fn visit_function<Function>();
+        fn visit_constant<Constant>();
     }
-}
 
-macro_rules! nodes {
-    ($(#[consumer = $method:ident()] $vis:vis $decl:ident $ident:ident $($tt:tt)? $(;)?)*) => {
-        $(node! {
-            #[consumer = $method()] $vis $decl $ident $($tt)?
-        })*
-    };
-}
-
-nodes! {
     #[consumer = visit_program()]
-    pub struct ProgramNode {
-        pub data_section: Option<DataSectionNode>,
-        pub text_section: Option<TextSectionNode>,
-        pub constants: Vec<ConstantNode>,
+    pub struct Program {
+        pub data_section: Option<Node<Span, DataSection>>,
+        pub text_section: Option<Node<Span, TextSection>>,
+        pub constants: Vec<Node<Span, Constant>>,
     }
 
     #[consumer = visit_data_section()]
-    pub struct DataSectionNode {
-        pub statements: Vec<StatementNode>
+    pub struct DataSection {
+        pub statements: Vec<Node<Span, Statement>>
     }
 
     #[consumer = visit_text_section()]
-    pub struct TextSectionNode {
-        pub statements: Vec<StatementNode>
+    pub struct TextSection {
+        pub statements: Vec<Node<Span, Statement>>
     }
 
     #[consumer = visit_statement()]
-    pub enum StatementNode {
-        Instruction(InstructionNode),
-        Label(LabelNode),
-        RawData(RawDataNode),
-        Constant(ConstantNode),
+    pub enum Statement {
+        Instruction(Node<Span, Instruction>),
+        Label(Node<Span, Label>),
+        RawData(Node<Span, RawData>),
+        Constant(Node<Span, Constant>),
     }
 
     #[consumer = visit_instruction()]
-    pub enum InstructionNode {
-        And { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Or { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Xor { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Not { rd: RegistryNode, ra: RegistryNode },
-        Add { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Sub { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Sha { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Shl { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Cmplt { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Cmple { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Cmpeq { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Cmpltu { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Cmpleu { rd: RegistryNode, ra: RegistryNode, rb: RegistryNode },
-        Addi { rd: RegistryNode, ra: RegistryNode, n6: LiteralNode },
-        Ld { rd: RegistryNode, n6: LiteralNode, ra: RegistryNode},
-        St { n6: LiteralNode, ra: RegistryNode, rb: RegistryNode },
-        Ldb { rd: RegistryNode, n6: LiteralNode, ra: RegistryNode},
-        Stb { n6: LiteralNode, ra: RegistryNode, rb: RegistryNode },
-        Jalr { rd: RegistryNode, ra: RegistryNode },
-        Bz { ra: RegistryNode, n8: LiteralNode },
-        Bnz { ra: RegistryNode, n8: LiteralNode },
-        Movi { rd: RegistryNode, n8: LiteralNode },
-        Movhi { rd: RegistryNode, n8: LiteralNode },
-        In { rd: RegistryNode, n8: LiteralNode },
-        Out { n8: LiteralNode, ra: RegistryNode }
+    pub enum Instruction {
+        And { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Or { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Xor { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Not { rd: Node<Span, Registry>, ra: Node<Span, Registry> },
+        Add { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Sub { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Sha { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Shl { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Cmplt { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Cmple { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Cmpeq { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Cmpltu { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Cmpleu { rd: Node<Span, Registry>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Addi { rd: Node<Span, Registry>, ra: Node<Span, Registry>, n6: Node<Span, Literal> },
+        Ld { rd: Node<Span, Registry>, n6: Node<Span, Literal>, ra: Node<Span, Registry>},
+        St { n6: Node<Span, Literal>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Ldb { rd: Node<Span, Registry>, n6: Node<Span, Literal>, ra: Node<Span, Registry>},
+        Stb { n6: Node<Span, Literal>, ra: Node<Span, Registry>, rb: Node<Span, Registry> },
+        Jalr { rd: Node<Span, Registry>, ra: Node<Span, Registry> },
+        Bz { ra: Node<Span, Registry>, n8: Node<Span, Literal> },
+        Bnz { ra: Node<Span, Registry>, n8: Node<Span, Literal> },
+        Movi { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
+        Movhi { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
+        In { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
+        Out { n8: Node<Span, Literal>, ra: Node<Span, Registry> }
     }
 
     #[consumer = visit_raw_data()]
-    pub enum RawDataNode {
+    pub enum RawData {
         WordAlign,
-        Bytes(Vec<LiteralNode>),
-        Words(Vec<LiteralNode>),
+        Bytes(Vec<Node<Span, Literal>>),
+        Words(Vec<Node<Span, Literal>>),
     }
 
     #[consumer = visit_registry()]
-    pub struct RegistryNode {
+    pub struct Registry {
         pub reg: u8
     }
 
     #[consumer = visit_literal()]
-    pub enum LiteralNode {
+    pub enum Literal {
         Constant(u16),
-        SymbolRef(SymbolRefNode),
-        Function(Box<FunctionNode>)
+        SymbolRef(Node<Span, SymbolRef>),
+        Function(Node<Span, Function>),
     }
 
     #[consumer = visit_label()]
-    pub struct LabelNode {
+    pub struct Label {
         pub label: String
     }
 
     #[consumer = visit_symbol_ref()]
-    pub struct SymbolRefNode {
+    pub struct SymbolRef {
         pub name: String
     }
 
     #[consumer = visit_function()]
-    pub enum FunctionNode {
-        Lo(LiteralNode),
-        Hi(LiteralNode)
+    pub enum Function {
+        Lo(Node<Span, Literal>),
+        Hi(Node<Span, Literal>),
     }
 
     #[consumer = visit_constant()]
-    pub struct ConstantNode {
+    pub struct Constant {
         pub name: String,
-        pub value: LiteralNode,
+        pub value: Node<Span, Literal>
     }
 }
 
-impl ProgramNode {
+impl Program {
     pub fn empty() -> Self {
         Self {
             text_section: None,
@@ -133,36 +123,36 @@ impl ProgramNode {
     }
 }
 
-impl DataSectionNode {
+impl DataSection {
     pub fn empty() -> Self {
         Self { statements: vec![] }
     }
 }
 
-impl TextSectionNode {
+impl TextSection {
     pub fn empty() -> Self {
         Self { statements: vec![] }
     }
 }
 
-impl RawDataNode {
+impl RawData {
     pub fn get_size(&self, pos: u16) -> u16 {
         match self {
-            RawDataNode::WordAlign => {
+            RawData::WordAlign => {
                 if pos % 2 == 0 {
                     0
                 } else {
                     1
                 }
             }
-            RawDataNode::Bytes(data) => data.len() as u16,
-            RawDataNode::Words(data) => data.len() as u16 * 2,
+            RawData::Bytes(data) => data.len() as u16,
+            RawData::Words(data) => data.len() as u16 * 2,
         }
     }
 }
 
-impl ConstantNode {
-    pub fn new(name: String, value: LiteralNode) -> Self {
+impl Constant {
+    pub fn new(name: String, value: Node<Span, Literal>) -> Self {
         Self { name, value }
     }
 }
