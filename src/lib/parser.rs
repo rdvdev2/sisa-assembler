@@ -54,6 +54,7 @@ impl<T: Iterator<Item = (Token, Span)>> Parser<T> {
             BEGIN_DATA => DataSection::empty().to_node(span!()),
             data_section[mut ds] statement[s] => {
                 ds.get_data_mut().statements.push(s);
+                *ds.get_common_mut() = span!();
                 ds
             }
         }
@@ -62,6 +63,7 @@ impl<T: Iterator<Item = (Token, Span)>> Parser<T> {
             BEGIN_TEXT => TextSection::empty().to_node(span!()),
             text_section[mut ts] statement[s] => {
                 ts.get_data_mut().statements.push(s);
+                *ts.get_common_mut() = span!();
                 ts
             }
         }
