@@ -53,6 +53,9 @@ Here are some notes for IC students that may use this assembler in their study:
  - Literals are always interpreted as signed twos-compliment values. This means that you can write `.byte 0xFFFF` and
    the assembler will interpret it as `.byte -1`, effectively translating a word into a byte. This is possibly not
    desirable when writing programs for your assignments, and you should avoid taking advantage of this feature.
+ - The instruction `NOP` may not be accepted in your assignments. However, you shouldn't need it, because it just does
+   nothing. If you use it, take note that it can be codified using any invalid opcode. In the case of this assembler,
+   `NOP` is always codified as `0xFFFF`.
 
 ## Project status
 This is a (somewhat loose) roadmap of the project. Take it with a grain of salt, I may not implement everything in the
@@ -68,6 +71,6 @@ list!
   - [ ] Unaligned instruction
 - [ ] Help messages
   - [ ] Use lo() and hi() to load words
-- [ ] Indicate span of non-syntactic errors
+- [x] Indicate span of non-syntactic errors
 - [ ] `--enforce-ic-compliance` flag
 - [ ] Tests

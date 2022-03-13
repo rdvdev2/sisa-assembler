@@ -26,6 +26,7 @@ while:      CMPEQ R2, R2, R1        ; Do 5 iterations
 endwhile:   MOVI  R0, lo(my_word)   ; Load @my_word in R0
             MOVHI R0, hi(my_word)
             ST    0(R0), R3         ; Store the result
+            NOP
             BZ    R2, LOOP          ; Loop indefinitely
 .end
 

@@ -107,6 +107,8 @@ impl<T: Iterator<Item = (Token, Span)>> Parser<T> {
 
             IN  reg[rd] COMMA lit[n8] => Instruction::In  { rd, n8 }.to_node(span!()),
             OUT lit[n8] COMMA reg[ra] => Instruction::Out { n8, ra }.to_node(span!()),
+
+            NOP => Instruction::Nop.to_node(span!()),
         }
 
         raw_data: Node<Span, RawData> {

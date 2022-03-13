@@ -58,6 +58,7 @@ impl<'a> Lexer<'a> {
         r"MOVHI" => MOVHI,
         r"IN" => IN,
         r"OUT" => OUT,
+        r"NOP" => NOP,
 
         r"R[0-7]" => parse_reg(tok),
         r"[0-9]+" => parse_int_lit(tok),

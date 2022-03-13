@@ -68,7 +68,8 @@ node_system! {
         Movi { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
         Movhi { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
         In { rd: Node<Span, Registry>, n8: Node<Span, Literal> },
-        Out { n8: Node<Span, Literal>, ra: Node<Span, Registry> }
+        Out { n8: Node<Span, Literal>, ra: Node<Span, Registry> },
+        Nop
     }
 
     #[consumer = visit_raw_data()]

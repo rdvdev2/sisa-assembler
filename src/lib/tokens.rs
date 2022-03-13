@@ -28,6 +28,7 @@ pub enum Token {
     MOVHI,
     IN,
     OUT,
+    NOP,
     REG(u8),
     LIT(u16),
     COMMA,

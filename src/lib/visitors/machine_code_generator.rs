@@ -424,6 +424,7 @@ impl<'a> MachineCodeGenerator<'a> {
                 true,
                 n8.accept(self).as_u8()?,
             ),
+            Instruction::Nop => 0xFFFF,
         })
     }
 }
