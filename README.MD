@@ -73,4 +73,5 @@ list!
   - [ ] Use lo() and hi() to load words
 - [x] Indicate span of non-syntactic errors
 - [ ] `--enforce-ic-compliance` flag
+- [ ] Macro support
 - [ ] Tests
