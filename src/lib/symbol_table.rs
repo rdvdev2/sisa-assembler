@@ -1,4 +1,5 @@
 use std::cmp::max;
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 pub struct SymbolTable {
@@ -33,26 +34,22 @@ impl SymbolTable {
     }
 
     pub fn put_constant(&mut self, name: String, value: u16) -> Result<(), String> {
-        if self
-            .symbols
-            .insert(name.clone(), SymbolTableEntry::new_constant(value))
-            .is_some()
-        {
-            Err(format!("Symbol {} is already defined", name))
-        } else {
-            Ok(())
+        match self.symbols.entry(name) {
+            Entry::Vacant(e) => {
+                e.insert(SymbolTableEntry::new_constant(value));
+                Ok(())
+            },
+            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key()))
         }
     }
 
     pub fn put_address(&mut self, name: String, value: u16) -> Result<(), String> {
-        if self
-            .symbols
-            .insert(name.clone(), SymbolTableEntry::new_address(value))
-            .is_some()
-        {
-            Err(format!("Symbol {} is already defined", name))
-        } else {
-            Ok(())
+        match self.symbols.entry(name) {
+            Entry::Vacant(e) => {
+                e.insert(SymbolTableEntry::new_address(value));
+                Ok(())
+            },
+            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key()))
         }
     }
 
