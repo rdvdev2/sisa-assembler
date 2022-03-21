@@ -2,7 +2,6 @@
 #![feature(derive_default_enum)]
 #![feature(assert_matches)]
 #![feature(result_option_inspect)]
-#![feature(int_abs_diff)]
 #![feature(try_trait_v2)]
 
 extern crate core;
