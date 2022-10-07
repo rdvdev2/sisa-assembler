@@ -1,5 +1,3 @@
-#![feature(is_some_with)]
-
 use std::path::PathBuf;
 use std::{fs, process};
 

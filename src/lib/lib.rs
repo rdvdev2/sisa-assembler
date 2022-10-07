@@ -1,5 +1,4 @@
 #![feature(proc_macro_hygiene)]
-#![feature(derive_default_enum)]
 #![feature(assert_matches)]
 #![feature(result_option_inspect)]
 #![feature(try_trait_v2)]
