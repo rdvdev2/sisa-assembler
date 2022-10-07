@@ -9,9 +9,9 @@ pub struct Parser<T: Iterator<Item = (Token, Span)>> {
     tokens: T,
 }
 
-#[allow(unused_braces)]                  // parser! {} generates a lot of those warnings
+#[allow(unused_braces)] // parser! {} generates a lot of those warnings
 #[allow(clippy::redundant_closure_call)] // same deal
-#[allow(clippy::ptr_arg)]                // some more
+#[allow(clippy::ptr_arg)] // some more
 impl<T: Iterator<Item = (Token, Span)>> Parser<T> {
     parser! {
         fn _parse(Token, Span);

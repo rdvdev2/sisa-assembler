@@ -38,8 +38,8 @@ impl SymbolTable {
             Entry::Vacant(e) => {
                 e.insert(SymbolTableEntry::new_constant(value));
                 Ok(())
-            },
-            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key()))
+            }
+            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key())),
         }
     }
 
@@ -48,8 +48,8 @@ impl SymbolTable {
             Entry::Vacant(e) => {
                 e.insert(SymbolTableEntry::new_address(value));
                 Ok(())
-            },
-            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key()))
+            }
+            Entry::Occupied(e) => Err(format!("Symbol {} is already defined", e.key())),
         }
     }
 

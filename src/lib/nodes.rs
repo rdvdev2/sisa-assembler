@@ -139,7 +139,7 @@ impl TextSection {
 impl RawData {
     pub fn get_size(&self, pos: u16) -> u16 {
         match self {
-            RawData::WordAlign => (pos % 2 != 0) as u16, 
+            RawData::WordAlign => (pos % 2 != 0) as u16,
             RawData::Bytes(data) => data.len() as u16,
             RawData::Words(data) => data.len() as u16 * 2,
         }
