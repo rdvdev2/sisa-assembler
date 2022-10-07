@@ -50,7 +50,7 @@ pub enum Token {
 }
 
 pub fn parse_reg(tok: &str) -> Token {
-    Token::REG(tok.trim_start_matches("R").parse().unwrap())
+    Token::REG(tok.trim_start_matches('R').parse().unwrap())
 }
 
 pub fn parse_int_lit(tok: &str) -> Token {

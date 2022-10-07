@@ -48,7 +48,7 @@ Recognized options:
 
     eprintln!(
         "{}",
-        assemble(&*config.source_file, &config.output_file, &config.flags)?
+        assemble(&config.source_file, &config.output_file, &config.flags)?
     );
 
     let duration = time::SystemTime::now().duration_since(start);

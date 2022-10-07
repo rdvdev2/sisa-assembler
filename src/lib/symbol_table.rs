@@ -56,7 +56,6 @@ impl SymbolTable {
     pub fn get_symbol(&self, symbol: &str) -> Result<&SymbolTableEntry, String> {
         self.symbols
             .get(symbol)
-            .map(|e| e)
             .ok_or(format!("Symbol {} isn't defined", symbol))
     }
 

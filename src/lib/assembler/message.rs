@@ -11,7 +11,7 @@ pub struct AssemblerMessage {
 }
 
 #[allow(dead_code)]
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum AssemblerMessageType {
     ERROR,
     WARNING,
@@ -63,11 +63,11 @@ impl AssemblerMessage {
 }
 
 fn write_context(code: &str, span: Span, msg_type: AssemblerMessageType) -> String {
-    let mut iter = code.chars().peekable();
+    let iter = code.chars().peekable();
     let mut line = 1;
     let mut context = String::new();
 
-    while let Some(c) = iter.next() {
+    for c in iter {
         if c == '\n' {
             line += 1;
         } else if span.lo.line <= line && line <= span.hi.line {

@@ -66,7 +66,7 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
         Rets::Raw(
             statements
                 .iter()
-                .map(|r| match r {
+                .filter_map(|r| match r {
                     Rets::Instruction(i) => {
                         self.add_warning("Found an instruction on .data", None);
                         Some(i.to_le_bytes().to_vec())
@@ -74,7 +74,6 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
                     Rets::RawData(d) => Some(d.to_vec()),
                     _ => None,
                 })
-                .flatten()
                 .flatten()
                 .collect(),
         )
@@ -95,7 +94,7 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
         Rets::Raw(
             statements
                 .iter()
-                .map(|r| match r {
+                .filter_map(|r| match r {
                     Rets::Instruction(i) => Some(i.to_le_bytes().to_vec()),
                     Rets::RawData(d) => {
                         self.add_warning("Found raw data in .text!", None);
@@ -103,7 +102,6 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
                     }
                     _ => None,
                 })
-                .flatten()
                 .flatten()
                 .collect(),
         )
@@ -122,9 +120,9 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
         self.current_pos += 2;
 
         self.codify_instruction(instruction, pc)
-            .map(|raw| Rets::Instruction(raw))
+            .map(Rets::Instruction)
             .inspect_err(|e| self.add_error(e, Some(*span)))
-            .unwrap_or(Default::default())
+            .unwrap_or_default()
     }
 
     fn visit_raw_data(&mut self, span: &Span, raw_data: &RawData) -> Rets {
@@ -149,7 +147,7 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
                     );
                 }
 
-                Rets::RawData(bytes.iter().flatten().map(|r| *r).collect())
+                Rets::RawData(bytes.iter().flatten().copied().collect())
             }
             RawData::Words(data) => {
                 self.current_pos += raw_data.get_size(self.current_pos);

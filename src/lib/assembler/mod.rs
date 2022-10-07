@@ -23,7 +23,7 @@ impl<'a> Assembler<'a> {
             assembler_messages: Vec::new(),
         };
 
-        let lexer = Lexer::new(&code);
+        let lexer = Lexer::new(code);
         let parser = Parser::new(lexer);
         let node = match parser.parse() {
             Ok(n) => n,
@@ -33,14 +33,14 @@ impl<'a> Assembler<'a> {
             }
         };
 
-        let mut symbol_table_builder = SymbolTableBuilder::new(&self.flags);
+        let mut symbol_table_builder = SymbolTableBuilder::new(self.flags);
         symbol_table_builder.build(&node);
         result
             .assembler_messages
             .extend(symbol_table_builder.get_messages());
         let symbol_table = symbol_table_builder.get_symbol_table();
 
-        let mut machine_code_generator = MachineCodeGenerator::new(&symbol_table, &self.flags);
+        let mut machine_code_generator = MachineCodeGenerator::new(&symbol_table, self.flags);
         result.machine_code = machine_code_generator.generate(&node);
         result
             .assembler_messages
