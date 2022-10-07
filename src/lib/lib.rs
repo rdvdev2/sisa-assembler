@@ -1,9 +1,4 @@
-#![feature(proc_macro_hygiene)]
 #![feature(assert_matches)]
-#![feature(result_option_inspect)]
-#![feature(try_trait_v2)]
-
-extern crate core;
 
 mod assembler;
 mod flags;

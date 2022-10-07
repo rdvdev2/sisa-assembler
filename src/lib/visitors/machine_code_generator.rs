@@ -119,10 +119,16 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
         let pc = self.current_pos;
         self.current_pos += 2;
 
-        self.codify_instruction(instruction, pc)
+        match self
+            .codify_instruction(instruction, pc)
             .map(Rets::Instruction)
-            .inspect_err(|e| self.add_error(e, Some(*span)))
-            .unwrap_or_default()
+        {
+            Err(e) => {
+                self.add_error(&e, Some(*span));
+                Default::default()
+            }
+            Ok(val) => val,
+        }
     }
 
     fn visit_raw_data(&mut self, span: &Span, raw_data: &RawData) -> Rets {
@@ -143,7 +149,7 @@ impl<'a> NodeVisitor<Rets> for MachineCodeGenerator<'a> {
                     bytes.push(
                         node.accept(self)
                             .as_u8()
-                            .inspect_err(|e| self.add_error(e, Some(*span))),
+                            .map_err(|e| self.add_error(&e, Some(*span))),
                     );
                 }
 
