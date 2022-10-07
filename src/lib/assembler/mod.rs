@@ -49,7 +49,7 @@ impl<'a> Assembler<'a> {
         if result
             .assembler_messages
             .iter()
-            .any(|msg| msg.msg_type == AssemblerMessageType::ERROR)
+            .any(|msg| msg.msg_type == AssemblerMessageType::Error)
         {
             result.machine_code = None;
         }

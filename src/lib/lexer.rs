@@ -14,64 +14,64 @@ impl<'a> Lexer<'a> {
     lexer! {
         fn next_token(tok) -> Token;
 
-        r";[^\n]*\n" => IGNORE,
+        r";[^\n]*\n" => Ignore,
 
-        r"\.text" => BEGIN_TEXT,
-        r"\.data" => BEGIN_DATA,
-        r"\.end" => END,
+        r"\.text" => BeginText,
+        r"\.data" => BeginData,
+        r"\.end" => End,
 
-        r"\.byte" => BYTE,
-        r"\.word" => WORD,
-        r"\.space" => SPACE,
-        r"\.even" => EVEN,
+        r"\.byte" => Byte,
+        r"\.word" => Word,
+        r"\.space" => Space,
+        r"\.even" => Even,
 
-        r"\.set" => SET,
+        r"\.set" => Set,
 
-        r"," => COMMA,
-        r"\(" => LPAR,
-        r"\)" => RPAR,
-        r":" => COLON,
-        r"=" => EQUALS,
+        r"," => Comma,
+        r"\(" => Lpar,
+        r"\)" => Rpar,
+        r":" => Colon,
+        r"=" => Equals,
 
-        r"AND" => AND,
-        r"OR" => OR,
-        r"XOR" => XOR,
-        r"NOT" => NOT,
-        r"ADD" => ADD,
-        r"SUB" => SUB,
-        r"SHA" => SHA,
-        r"SHL" => SHL,
-        r"CMPLT" => CMPLT,
-        r"CMPLE" => CMPLE,
-        r"CMPEQ" => CMPEQ,
-        r"CMPLTU" => CMPLTU,
-        r"CMPLEU" => CMPLEU,
-        r"ADDI" => ADDI,
-        r"LD" => LD,
-        r"ST" => ST,
-        r"LDB" => LDB,
-        r"STB" => STB,
-        r"JALR" => JALR,
-        r"BZ" => BZ,
-        r"BNZ" => BNZ,
-        r"MOVI" => MOVI,
-        r"MOVHI" => MOVHI,
-        r"IN" => IN,
-        r"OUT" => OUT,
-        r"NOP" => NOP,
+        r"AND" => And,
+        r"OR" => Or,
+        r"XOR" => Xor,
+        r"NOT" => Not,
+        r"ADD" => Add,
+        r"SUB" => Sub,
+        r"SHA" => Sha,
+        r"SHL" => Shl,
+        r"CMPLT" => Cmplt,
+        r"CMPLE" => Cmple,
+        r"CMPEQ" => Cmpeq,
+        r"CMPLTU" => Cmpltu,
+        r"CMPLEU" => Cmpleu,
+        r"ADDI" => Addi,
+        r"LD" => Ld,
+        r"ST" => St,
+        r"LDB" => Ldb,
+        r"STB" => Stb,
+        r"JALR" => Jalr,
+        r"BZ" => Bz,
+        r"BNZ" => Bnz,
+        r"MOVI" => Movi,
+        r"MOVHI" => Movhi,
+        r"IN" => In,
+        r"OUT" => Out,
+        r"NOP" => Nop,
 
         r"R[0-7]" => parse_reg(tok),
         r"[0-9]+" => parse_int_lit(tok),
         r"[-+][0-9]+" => parse_int_lit(tok),
         r"0(x|X)[0-9a-fA-f]+" => parse_hex_lit(tok),
 
-        r"lo" => LO,
-        r"hi" => HI,
+        r"lo" => Lo,
+        r"hi" => Hi,
 
-        r"[a-zA-Z][a-zA-Z0-9\_\-]*" => IDENT(tok.into()),
+        r"[a-zA-Z][a-zA-Z0-9\_\-]*" => Ident(tok.into()),
 
-        r"[\n\t\s\r ]+" => IGNORE,
-        r"." => INVALID(tok.into())
+        r"[\n\t\s\r ]+" => Ignore,
+        r"." => Invalid(tok.into())
     }
 
     pub fn new(input: &'a str) -> Self {
@@ -111,12 +111,12 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             }
 
-            if let Token::IGNORE = token {
+            if let Token::Ignore = token {
                 self.remaining = remaining;
             } else {
                 self.remaining = remaining;
 
-                if let Token::END = token {
+                if let Token::End = token {
                     self.remaining = "";
                 }
 
@@ -144,13 +144,13 @@ mod tests {
     fn lex_instruction() {
         let mut lexer = Lexer::new("LDB R1, 32(R3)");
 
-        assert_matches!(lexer.next(), Some((Token::LDB, _)));
-        assert_matches!(lexer.next(), Some((Token::REG(1), _)));
-        assert_matches!(lexer.next(), Some((Token::COMMA, _)));
-        assert_matches!(lexer.next(), Some((Token::LIT(32), _)));
-        assert_matches!(lexer.next(), Some((Token::LPAR, _)));
-        assert_matches!(lexer.next(), Some((Token::REG(3), _)));
-        assert_matches!(lexer.next(), Some((Token::RPAR, _)));
+        assert_matches!(lexer.next(), Some((Token::Ldb, _)));
+        assert_matches!(lexer.next(), Some((Token::Reg(1), _)));
+        assert_matches!(lexer.next(), Some((Token::Comma, _)));
+        assert_matches!(lexer.next(), Some((Token::Lit(32), _)));
+        assert_matches!(lexer.next(), Some((Token::Lpar, _)));
+        assert_matches!(lexer.next(), Some((Token::Reg(3), _)));
+        assert_matches!(lexer.next(), Some((Token::Rpar, _)));
         assert_matches!(lexer.next(), None);
     }
 
@@ -159,16 +159,16 @@ mod tests {
         let mut lexer = Lexer::new("lab: (lab)");
 
         match lexer.next() {
-            Some((Token::IDENT(name), _)) => assert_eq!(name, "lab"),
+            Some((Token::Ident(name), _)) => assert_eq!(name, "lab"),
             _ => panic!(),
         }
-        assert_matches!(lexer.next(), Some((Token::COLON, _)));
-        assert_matches!(lexer.next(), Some((Token::LPAR, _)));
+        assert_matches!(lexer.next(), Some((Token::Colon, _)));
+        assert_matches!(lexer.next(), Some((Token::Lpar, _)));
         match lexer.next() {
-            Some((Token::IDENT(name), _)) => assert_eq!(name, "lab"),
+            Some((Token::Ident(name), _)) => assert_eq!(name, "lab"),
             _ => panic!(),
         }
-        assert_matches!(lexer.next(), Some((Token::RPAR, _)));
+        assert_matches!(lexer.next(), Some((Token::Rpar, _)));
         assert_matches!(lexer.next(), None);
     }
 
@@ -176,7 +176,7 @@ mod tests {
     fn lex_invalid() {
         let mut lexer = Lexer::new(".");
 
-        assert_matches!(lexer.next(), Some((Token::INVALID(_), _)));
+        assert_matches!(lexer.next(), Some((Token::Invalid(_), _)));
         assert_matches!(lexer.next(), None);
     }
 
@@ -191,14 +191,14 @@ mod tests {
     fn lex_functions() {
         let mut lexer = Lexer::new("lo(0) hi(0)");
 
-        assert_matches!(lexer.next(), Some((Token::LO, _)));
-        assert_matches!(lexer.next(), Some((Token::LPAR, _)));
-        assert_matches!(lexer.next(), Some((Token::LIT(0), _)));
-        assert_matches!(lexer.next(), Some((Token::RPAR, _)));
-        assert_matches!(lexer.next(), Some((Token::HI, _)));
-        assert_matches!(lexer.next(), Some((Token::LPAR, _)));
-        assert_matches!(lexer.next(), Some((Token::LIT(0), _)));
-        assert_matches!(lexer.next(), Some((Token::RPAR, _)));
+        assert_matches!(lexer.next(), Some((Token::Lo, _)));
+        assert_matches!(lexer.next(), Some((Token::Lpar, _)));
+        assert_matches!(lexer.next(), Some((Token::Lit(0), _)));
+        assert_matches!(lexer.next(), Some((Token::Rpar, _)));
+        assert_matches!(lexer.next(), Some((Token::Hi, _)));
+        assert_matches!(lexer.next(), Some((Token::Lpar, _)));
+        assert_matches!(lexer.next(), Some((Token::Lit(0), _)));
+        assert_matches!(lexer.next(), Some((Token::Rpar, _)));
         assert_matches!(lexer.next(), None);
     }
 
@@ -206,13 +206,13 @@ mod tests {
     fn lex_directives() {
         let mut lexer = Lexer::new(".text .data .byte .word .space .even .end .text");
 
-        assert_matches!(lexer.next(), Some((Token::BEGIN_TEXT, _)));
-        assert_matches!(lexer.next(), Some((Token::BEGIN_DATA, _)));
-        assert_matches!(lexer.next(), Some((Token::BYTE, _)));
-        assert_matches!(lexer.next(), Some((Token::WORD, _)));
-        assert_matches!(lexer.next(), Some((Token::SPACE, _)));
-        assert_matches!(lexer.next(), Some((Token::EVEN, _)));
-        assert_matches!(lexer.next(), Some((Token::END, _)));
+        assert_matches!(lexer.next(), Some((Token::BeginText, _)));
+        assert_matches!(lexer.next(), Some((Token::BeginData, _)));
+        assert_matches!(lexer.next(), Some((Token::Byte, _)));
+        assert_matches!(lexer.next(), Some((Token::Word, _)));
+        assert_matches!(lexer.next(), Some((Token::Space, _)));
+        assert_matches!(lexer.next(), Some((Token::Even, _)));
+        assert_matches!(lexer.next(), Some((Token::End, _)));
         assert_matches!(lexer.next(), None);
     }
 

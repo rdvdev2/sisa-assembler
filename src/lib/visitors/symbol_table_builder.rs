@@ -36,7 +36,7 @@ impl<'a> SymbolTableBuilder<'a> {
 
         if !self.symbol_table.is_valid_layout() {
             self.messages.push(AssemblerMessage {
-                msg_type: AssemblerMessageType::ERROR,
+                msg_type: AssemblerMessageType::Error,
                 description: String::from("sections .text and .code are overlaping"),
                 span: None,
             })
@@ -121,7 +121,7 @@ impl<'a> NodeVisitor<()> for SymbolTableBuilder<'a> {
     fn visit_label(&mut self, span: &Span, label: &Label) {
         if let Err(e) = self.put_current_address(label.label.clone()) {
             self.messages.push(AssemblerMessage {
-                msg_type: AssemblerMessageType::ERROR,
+                msg_type: AssemblerMessageType::Error,
                 description: e,
                 span: Some(*span),
             });
@@ -136,7 +136,7 @@ impl<'a> NodeVisitor<()> for SymbolTableBuilder<'a> {
             )),
         } {
             self.messages.push(AssemblerMessage {
-                msg_type: AssemblerMessageType::ERROR,
+                msg_type: AssemblerMessageType::Error,
                 description: e,
                 span: Some(*span),
             })

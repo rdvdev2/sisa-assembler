@@ -13,17 +13,17 @@ pub struct AssemblerMessage {
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone)]
 pub enum AssemblerMessageType {
-    ERROR,
-    WARNING,
-    HELP,
+    Error,
+    Warning,
+    Help,
 }
 
 impl Display for AssemblerMessageType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            AssemblerMessageType::ERROR => write!(f, "{}", "error".red()),
-            AssemblerMessageType::WARNING => write!(f, "{}", "warning".yellow()),
-            AssemblerMessageType::HELP => write!(f, "{}", "help".blue()),
+            AssemblerMessageType::Error => write!(f, "{}", "error".red()),
+            AssemblerMessageType::Warning => write!(f, "{}", "warning".yellow()),
+            AssemblerMessageType::Help => write!(f, "{}", "help".blue()),
         }
     }
 }
@@ -31,9 +31,9 @@ impl Display for AssemblerMessageType {
 impl AssemblerMessageType {
     pub(crate) fn get_color(&self) -> Color {
         match self {
-            AssemblerMessageType::ERROR => Color::Red,
-            AssemblerMessageType::WARNING => Color::Yellow,
-            AssemblerMessageType::HELP => Color::Blue,
+            AssemblerMessageType::Error => Color::Red,
+            AssemblerMessageType::Warning => Color::Yellow,
+            AssemblerMessageType::Help => Color::Blue,
         }
     }
 }

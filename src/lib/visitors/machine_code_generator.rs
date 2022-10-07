@@ -246,7 +246,7 @@ impl<'a> MachineCodeGenerator<'a> {
 
     fn add_warning(&mut self, message: &str, span: Option<Span>) {
         self.messages.push(AssemblerMessage {
-            msg_type: AssemblerMessageType::WARNING,
+            msg_type: AssemblerMessageType::Warning,
             description: message.to_string(),
             span,
         });
@@ -254,7 +254,7 @@ impl<'a> MachineCodeGenerator<'a> {
 
     fn add_error(&mut self, message: &str, span: Option<Span>) {
         self.messages.push(AssemblerMessage {
-            msg_type: AssemblerMessageType::ERROR,
+            msg_type: AssemblerMessageType::Error,
             description: message.to_string(),
             span,
         })
